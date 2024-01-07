@@ -60,6 +60,7 @@ while currentLine < lineCount:
         continue
     
     excelElement = ExcelElement()
+    line = line.replace(',', '，')
     excelElement.enWord = line
     
     findCnWord = False
@@ -72,6 +73,7 @@ while currentLine < lineCount:
         if len(line) == 0 or (line.count('/') > 0):
             continue
         else:
+            line = line.replace(',', '，')
             excelElement.cnWord = line
             findCnWord = True
     
@@ -85,6 +87,9 @@ ws['B1'] = 'cnWord'
 #ws['C1'] = 'cnWord2'
 
 txtFileLines = []
+sentenceTxtFileLines = []
+ouluTxtFileLines = []
+sentenceOuluTxtFileLines = []
 
 # 创建一个翻译器，设置源语言和目标语言
 #translator = Translator(to_lang = "zh", from_lang = "en")
@@ -92,19 +97,37 @@ txtFileLines = []
 for i, excelElement in enumerate(excelElements):
     ws.cell(row=i+2, column=1, value=excelElement.enWord)
     ws.cell(row=i+2, column=2, value=excelElement.cnWord)
-    txtFileLines.append(excelElement.enWord + "\t" + excelElement.cnWord)
+    wordCount = excelElement.enWord.count(' ')
+    if wordCount > 2:
+        excelElement.enWord = excelElement.enWord[0].upper() + excelElement.enWord[1:]
+        sentenceTxtFileLines.append(excelElement.enWord + "\t" + excelElement.cnWord)
+        sentenceOuluTxtFileLines.append(excelElement.enWord + "," + excelElement.cnWord)
+    else:
+        txtFileLines.append(excelElement.enWord + "\t" + excelElement.cnWord)
+        ouluTxtFileLines.append(excelElement.enWord + "," + excelElement.cnWord)
     # 通过翻译器翻译
     #cnWord2 = translator.translate(excelElement.enWord)
     #print(i +"/"+len(excelElements) + " "+ excelElement.enWord + " " + cnWord2)
     #ws.cell(row=i+2, column=3, value=cnWord2)
 
 xlsxFileName = file_path.replace('.docx', '.xlsx')
+
 txtFileName = file_path.replace('.docx', '.txt')
+ouluTxtFileName = file_path.replace('.docx', '_oulu.txt')
+sentenceTxtFileName = file_path.replace('.docx', '_sentence.txt')
+sentenceOuluTxtFileName = file_path.replace('.docx', '_sentence_oulu.txt')
 
 
 wb.save(xlsxFileName)
 with open(txtFileName, 'w', encoding='utf-8') as f:
     f.write('\n'.join(txtFileLines))
+with open(ouluTxtFileName, 'w', encoding='utf-8') as f:
+    f.write('\n'.join(ouluTxtFileLines))
+
+with open(sentenceTxtFileName, 'w', encoding='utf-8') as f:
+    f.write('\n'.join(sentenceTxtFileLines))
+with open(sentenceOuluTxtFileName, 'w', encoding='utf-8') as f:
+    f.write('\n'.join(sentenceOuluTxtFileLines))
 
 #os.system('start ' + xlsxFileName)
 os.system('start ' + txtFileName)
